@@ -7,9 +7,10 @@
 #SBATCH --mem=100G
 #SBATCH --time=12:00:00
 #SBATCH --output=log/%x_%j.out
-#SBATCH --error=log/%x_%j.err
+#SBATCH --error=log/%x_%j.log
 
 set -euo pipefail
+export PYTHONUNBUFFERED=1
 
 echo "=== Job info ==="
 echo "Job ID: $SLURM_JOB_ID"
