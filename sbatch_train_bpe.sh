@@ -43,21 +43,7 @@ which uv || true
 python --version || true
 echo
 
-echo "=== Train TinyStories BPE (vocab_size=10000) ==="
-uv run python train_bpe.py \
-  --dataset tinystories \
-  --vocab-size 10000 \
-  --tinystories-output tinystories_bpe.pkl
-echo
-
-echo "=== Train OpenWebText BPE (vocab_size=32000) ==="
-uv run python train_bpe.py \
-  --dataset owt \
-  --vocab-size 32000 \
-  --owt-output owt_bpe.pkl
-echo
+uv run train_bpe_datasets.py --dataset both --parallel-datasets --device auto --workers 8
 
 echo "=== Done ==="
 date
-
-uv run python train_bpe_datasets.py --dataset tinystories --vocab-size 10000
