@@ -43,7 +43,7 @@ which uv || true
 python --version || true
 echo
 
-uv run train_bpe_datasets.py --dataset both --parallel-datasets --device auto --workers 8
+uv run train_bpe_datasets.py --dataset owt --parallel-datasets --device auto --workers 8
 
 echo "=== Done ==="
 date
