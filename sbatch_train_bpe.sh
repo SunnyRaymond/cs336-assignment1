@@ -25,6 +25,8 @@ echo "=== GPU info ==="
 nvidia-smi
 echo
 
+source /var/scratch/dpp2567/miniconda3/etc/profile.d/conda.sh
+
 # Go to your project root if needed
 # Example:
 # cd /var/scratch/dpp2567/CS336-2025-Spring/assignment1-basics
