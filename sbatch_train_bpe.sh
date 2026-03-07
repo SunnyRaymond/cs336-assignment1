@@ -32,6 +32,7 @@ source /var/scratch/dpp2567/miniconda3/etc/profile.d/conda.sh
 # cd /var/scratch/dpp2567/CS336-2025-Spring/assignment1-basics
 
 # Conda setup
+conda install pip
 source /var/scratch/dpp2567/miniconda3/etc/profile.d/conda.sh
 
 # Activate your environment if needed
