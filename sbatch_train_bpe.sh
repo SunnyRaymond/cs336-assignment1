@@ -59,3 +59,5 @@ echo
 
 echo "=== Done ==="
 date
+
+uv run python train_bpe_datasets.py --dataset tinystories --vocab-size 10000
