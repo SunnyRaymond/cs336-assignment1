@@ -18,6 +18,8 @@ echo "PWD:  $(pwd)"
 echo "Date: $(date)"
 echo
 
+module load cuda12.6/toolkit/12.6
+
 echo "=== GPU info ==="
 nvidia-smi
 echo
