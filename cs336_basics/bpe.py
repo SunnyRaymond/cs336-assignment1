@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import os
+import pickle
 from collections import Counter, defaultdict
+from collections.abc import Iterable, Iterator
+import json
 
 import regex
 import torch
@@ -11,6 +14,157 @@ GPT2_PRETOKEN_PATTERN = (
     r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
 )
 PRETOKEN_RE = regex.compile(GPT2_PRETOKEN_PATTERN)
+
+
+class Tokenizer:
+    def __init__(
+        self,
+        vocab: dict[int, bytes],
+        merges: list[tuple[bytes, bytes]],
+        special_tokens: list[str] | None = None,
+    ):
+        self.vocab: dict[int, bytes] = dict(vocab)
+        self.merges: list[tuple[bytes, bytes]] = list(merges)
+
+        # Ensure any declared special tokens exist as full tokens in the vocabulary.
+        self.special_tokens: list[str] = list(special_tokens or [])
+        vocab_values = set(self.vocab.values())
+        for special_token in self.special_tokens:
+            special_bytes = special_token.encode("utf-8")
+            if special_bytes not in vocab_values:
+                self.vocab[len(self.vocab)] = special_bytes
+                vocab_values.add(special_bytes)
+
+        self.bytes_to_id: dict[bytes, int] = {token_bytes: token_id for token_id, token_bytes in self.vocab.items()}
+        self.merge_ranks: dict[tuple[bytes, bytes], int] = {
+            pair: rank for rank, pair in enumerate(self.merges)
+        }
+
+        if self.special_tokens:
+            escaped = [regex.escape(token) for token in sorted(self.special_tokens, key=len, reverse=True)]
+            self.special_pattern = regex.compile("|".join(escaped))
+            self.special_to_id = {
+                token: self.bytes_to_id[token.encode("utf-8")]
+                for token in self.special_tokens
+            }
+        else:
+            self.special_pattern = None
+            self.special_to_id: dict[str, int] = {}
+
+    @classmethod
+    def from_files(
+        cls,
+        vocab_filepath: str,
+        merges_filepath: str,
+        special_tokens: list[str] | None = None,
+    ) -> "Tokenizer":
+        vocab: dict[int, bytes]
+        merges: list[tuple[bytes, bytes]]
+
+        if str(vocab_filepath).endswith(".pkl"):
+            with open(vocab_filepath, "rb") as f:
+                payload = pickle.load(f)
+            if isinstance(payload, dict) and "vocab" in payload:
+                vocab = payload["vocab"]
+                if "merges" in payload:
+                    merges = payload["merges"]
+                else:
+                    with open(merges_filepath, "rb") as f:
+                        merges = pickle.load(f)
+            else:
+                vocab = payload
+                with open(merges_filepath, "rb") as f:
+                    merges = pickle.load(f)
+            return cls(vocab=vocab, merges=merges, special_tokens=special_tokens)
+
+        with open(vocab_filepath, "r", encoding="utf-8") as f:
+            raw_vocab = json.load(f)
+        with open(merges_filepath, "r", encoding="utf-8") as f:
+            raw_merges = [line.strip() for line in f if line.strip()]
+
+        vocab = {}
+        for k, v in raw_vocab.items():
+            if isinstance(k, str) and k.isdigit():
+                vocab[int(k)] = v.encode("utf-8") if isinstance(v, str) else bytes(v)
+            else:
+                vocab[int(v)] = k.encode("utf-8")
+
+        merges = []
+        for line in raw_merges:
+            parts = line.split(" ")
+            if len(parts) != 2:
+                continue
+            merges.append((parts[0].encode("utf-8"), parts[1].encode("utf-8")))
+
+        return cls(vocab=vocab, merges=merges, special_tokens=special_tokens)
+
+    def _apply_bpe(self, token_bytes: bytes) -> list[bytes]:
+        if not token_bytes:
+            return []
+
+        parts = [bytes([b]) for b in token_bytes]
+        while len(parts) > 1:
+            best_rank = None
+            best_pair = None
+            for i in range(len(parts) - 1):
+                pair = (parts[i], parts[i + 1])
+                rank = self.merge_ranks.get(pair)
+                if rank is None:
+                    continue
+                if best_rank is None or rank < best_rank:
+                    best_rank = rank
+                    best_pair = pair
+
+            if best_pair is None:
+                break
+
+            merged_parts: list[bytes] = []
+            i = 0
+            while i < len(parts):
+                if i + 1 < len(parts) and parts[i] == best_pair[0] and parts[i + 1] == best_pair[1]:
+                    merged_parts.append(parts[i] + parts[i + 1])
+                    i += 2
+                else:
+                    merged_parts.append(parts[i])
+                    i += 1
+            parts = merged_parts
+
+        return parts
+
+    def _encode_ordinary(self, text: str) -> list[int]:
+        ids: list[int] = []
+        for match in PRETOKEN_RE.finditer(text):
+            pretoken = match.group(0).encode("utf-8")
+            for token in self._apply_bpe(pretoken):
+                ids.append(self.bytes_to_id[token])
+        return ids
+
+    def encode(self, text: str) -> list[int]:
+        if not text:
+            return []
+
+        if self.special_pattern is None:
+            return self._encode_ordinary(text)
+
+        ids: list[int] = []
+        pos = 0
+        for match in self.special_pattern.finditer(text):
+            if match.start() > pos:
+                ids.extend(self._encode_ordinary(text[pos:match.start()]))
+            ids.append(self.special_to_id[match.group(0)])
+            pos = match.end()
+        if pos < len(text):
+            ids.extend(self._encode_ordinary(text[pos:]))
+        return ids
+
+    def encode_iterable(self, iterable: Iterable[str]) -> Iterator[int]:
+        for chunk in iterable:
+            for token_id in self.encode(chunk):
+                yield token_id
+
+    def decode(self, ids: list[int]) -> str:
+        combined = b"".join(self.vocab[token_id] for token_id in ids)
+        return combined.decode("utf-8", errors="replace")
 
 
 def _count_pretokens_in_segment(segment: str) -> Counter[bytes]:
