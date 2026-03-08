@@ -22,6 +22,15 @@ def scaled_dot_product_attention(
     return torch.matmul(attn_probs, V)
 
 
+def cross_entropy(inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+    max_logits = torch.max(inputs, dim=-1, keepdim=True).values
+    shifted = inputs - max_logits
+    logsumexp = torch.log(torch.sum(torch.exp(shifted), dim=-1))
+    target_logits = torch.gather(inputs, dim=-1, index=targets.unsqueeze(-1)).squeeze(-1)
+    losses = -target_logits + max_logits.squeeze(-1) + logsumexp
+    return torch.mean(losses)
+
+
 class Linear(nn.Module):
     def __init__(
         self,

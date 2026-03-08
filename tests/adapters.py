@@ -8,6 +8,7 @@ import numpy.typing as npt
 import torch
 from cs336_basics.bpe import Tokenizer, train_bpe
 from cs336_basics.model import (
+    cross_entropy as model_cross_entropy,
     Embedding,
     Linear,
     MultiHeadSelfAttention,
@@ -576,7 +577,7 @@ def run_cross_entropy(
     Returns:
         Float[Tensor, ""]: The average cross-entropy loss across examples.
     """
-    raise NotImplementedError
+    return model_cross_entropy(inputs, targets)
 
 
 def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm: float) -> None:
