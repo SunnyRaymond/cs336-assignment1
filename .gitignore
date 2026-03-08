@@ -163,6 +163,7 @@ cython_debug/
 
 # omit the .txt files in the root/data directory
 /data/*.txt
+/data/*.bin
 
 # omit vs code settings
 .vscode/
