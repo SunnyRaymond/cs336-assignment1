@@ -154,3 +154,46 @@ class RotaryPositionalEmbedding(nn.Module):
         out[..., 0::2] = out_even
         out[..., 1::2] = out_odd
         return out
+
+
+class MultiHeadSelfAttention(nn.Module):
+    def __init__(
+        self,
+        d_model: int,
+        num_heads: int,
+        device: torch.device | None = None,
+        dtype: torch.dtype | None = None,
+    ) -> None:
+        super().__init__()
+        if d_model % num_heads != 0:
+            raise ValueError("d_model must be divisible by num_heads.")
+
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads
+        self.d_v = d_model // num_heads
+
+        self.q_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.k_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.v_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.output_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        seq_len = x.shape[-2]
+        batch_dims = x.shape[:-2]
+
+        q = self.q_proj(x)
+        k = self.k_proj(x)
+        v = self.v_proj(x)
+
+        q = q.view(*batch_dims, seq_len, self.num_heads, self.d_k).transpose(-3, -2)
+        k = k.view(*batch_dims, seq_len, self.num_heads, self.d_k).transpose(-3, -2)
+        v = v.view(*batch_dims, seq_len, self.num_heads, self.d_v).transpose(-3, -2)
+
+        causal_mask = torch.tril(
+            torch.ones((seq_len, seq_len), dtype=torch.bool, device=x.device),
+            diagonal=0,
+        )
+        attn_out = scaled_dot_product_attention(q, k, v, causal_mask)
+        attn_out = attn_out.transpose(-3, -2).contiguous().view(*batch_dims, seq_len, self.d_model)
+        return self.output_proj(attn_out)

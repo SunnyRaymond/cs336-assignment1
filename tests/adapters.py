@@ -10,6 +10,7 @@ from cs336_basics.bpe import Tokenizer, train_bpe
 from cs336_basics.model import (
     Embedding,
     Linear,
+    MultiHeadSelfAttention,
     RMSNorm,
     RotaryPositionalEmbedding,
     SwiGLU,
@@ -166,7 +167,21 @@ def run_multihead_self_attention(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    raise NotImplementedError
+    attn = MultiHeadSelfAttention(
+        d_model=d_model,
+        num_heads=num_heads,
+        device=q_proj_weight.device,
+        dtype=q_proj_weight.dtype,
+    )
+    attn.load_state_dict(
+        {
+            "q_proj.W": q_proj_weight,
+            "k_proj.W": k_proj_weight,
+            "v_proj.W": v_proj_weight,
+            "output_proj.W": o_proj_weight,
+        }
+    )
+    return attn(in_features)
 
 
 def run_multihead_self_attention_with_rope(
