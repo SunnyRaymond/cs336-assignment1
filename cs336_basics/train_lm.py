@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -40,18 +41,27 @@ def estimate_loss(
     context_length: int,
     eval_iters: int,
     device: str,
+    amp_dtype: str,
 ) -> tuple[float, float]:
+    if device.startswith("cuda") and amp_dtype in {"bf16", "fp16"}:
+        amp_t = torch.bfloat16 if amp_dtype == "bf16" else torch.float16
+        autocast_ctx = lambda: torch.amp.autocast(device_type="cuda", dtype=amp_t)  # noqa: E731
+    else:
+        autocast_ctx = nullcontext
+
     model.eval()
     train_losses = []
     val_losses = []
     for _ in range(eval_iters):
         x, y = get_batch(train_data, batch_size, context_length, device)
-        logits = model(x)
-        train_losses.append(cross_entropy(logits.view(-1, logits.size(-1)), y.view(-1)).item())
+        with autocast_ctx():
+            logits = model(x)
+        train_losses.append(cross_entropy(logits.float().view(-1, logits.size(-1)), y.view(-1)).item())
     for _ in range(eval_iters):
         x, y = get_batch(val_data, batch_size, context_length, device)
-        logits = model(x)
-        val_losses.append(cross_entropy(logits.view(-1, logits.size(-1)), y.view(-1)).item())
+        with autocast_ctx():
+            logits = model(x)
+        val_losses.append(cross_entropy(logits.float().view(-1, logits.size(-1)), y.view(-1)).item())
     model.train()
     return float(np.mean(train_losses)), float(np.mean(val_losses))
 
@@ -74,6 +84,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--val_data", type=Path, required=True, help="Path to val binary token file")
     p.add_argument("--data_dtype", type=str, default="uint16", choices=["uint16", "int32", "int64"])
     p.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
+    p.add_argument("--amp_dtype", choices=["none", "bf16", "fp16"], default="none")
 
     p.add_argument("--vocab_size", type=int, required=True)
     p.add_argument("--context_length", type=int, default=128)
@@ -146,14 +157,21 @@ def main() -> None:
         wandb_run = wandb.init(project=args.wandb_project, config=vars(args))
 
     model.train()
+    if args.device.startswith("cuda") and args.amp_dtype in {"bf16", "fp16"}:
+        amp_t = torch.bfloat16 if args.amp_dtype == "bf16" else torch.float16
+        autocast_ctx = lambda: torch.amp.autocast(device_type="cuda", dtype=amp_t)  # noqa: E731
+    else:
+        autocast_ctx = nullcontext
+
     for step in range(start_step, args.max_steps):
         lr = get_lr(step, args.max_lr, args.min_lr, args.warmup_iters, args.cosine_cycle_iters)
         for pg in optimizer.param_groups:
             pg["lr"] = lr
 
         x, y = get_batch(train_data, args.batch_size, args.context_length, args.device)
-        logits = model(x)
-        loss = cross_entropy(logits.view(-1, logits.size(-1)), y.view(-1))
+        with autocast_ctx():
+            logits = model(x)
+        loss = cross_entropy(logits.float().view(-1, logits.size(-1)), y.view(-1))
 
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
@@ -174,6 +192,7 @@ def main() -> None:
                 args.context_length,
                 args.eval_iters,
                 args.device,
+                args.amp_dtype,
             )
             print(f"[eval] step={step} train={train_eval:.6f} val={val_eval:.6f}")
             if wandb_run is not None:

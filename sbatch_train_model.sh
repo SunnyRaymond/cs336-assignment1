@@ -10,6 +10,7 @@
 
 set -euo pipefail
 export PYTHONUNBUFFERED=1
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 echo "=== Job info ==="
 echo "Job ID: $SLURM_JOB_ID"
@@ -76,12 +77,12 @@ uv run cs336_basics/train_lm.py \
   --val_data "$VAL_BIN" \
   --data_dtype uint16 \
   --vocab_size 10000 \
-  --context_length 256 \
-  --d_model 512 \
-  --num_layers 8 \
-  --num_heads 8 \
-  --d_ff 1536 \
-  --batch_size 64 \
+  --context_length 128 \
+  --d_model 256 \
+  --num_layers 4 \
+  --num_heads 4 \
+  --d_ff 768 \
+  --batch_size 8 \
   --max_steps 20000 \
   --eval_every 200 \
   --eval_iters 50 \
@@ -91,6 +92,7 @@ uv run cs336_basics/train_lm.py \
   --warmup_iters 1000 \
   --cosine_cycle_iters 20000 \
   --weight_decay 0.1 \
+  --amp_dtype bf16 \
   --checkpoint_path checkpoints/tinystories_lm.pt \
   --save_every 500
 
