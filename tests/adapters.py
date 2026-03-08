@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import os
 from collections.abc import Iterable
 from typing import IO, Any, BinaryIO
@@ -625,7 +626,13 @@ def run_get_lr_cosine_schedule(
     Returns:
         Learning rate at the given iteration under the specified schedule.
     """
-    raise NotImplementedError
+    if it < warmup_iters:
+        return max_learning_rate * it / warmup_iters
+    if it <= cosine_cycle_iters:
+        decay_ratio = (it - warmup_iters) / (cosine_cycle_iters - warmup_iters)
+        coeff = 0.5 * (1 + math.cos(math.pi * decay_ratio))
+        return min_learning_rate + coeff * (max_learning_rate - min_learning_rate)
+    return min_learning_rate
 
 
 def run_save_checkpoint(
