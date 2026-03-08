@@ -147,6 +147,9 @@ class RotaryPositionalEmbedding(nn.Module):
 
         x_even = x[..., 0::2]
         x_odd = x[..., 1::2]
+        while cos.ndim < x_even.ndim:
+            cos = cos.unsqueeze(-3)
+            sin = sin.unsqueeze(-3)
         out_even = x_even * cos - x_odd * sin
         out_odd = x_even * sin + x_odd * cos
 
@@ -197,3 +200,86 @@ class MultiHeadSelfAttention(nn.Module):
         attn_out = scaled_dot_product_attention(q, k, v, causal_mask)
         attn_out = attn_out.transpose(-3, -2).contiguous().view(*batch_dims, seq_len, self.d_model)
         return self.output_proj(attn_out)
+
+
+class MultiHeadSelfAttentionWithRoPE(nn.Module):
+    def __init__(
+        self,
+        d_model: int,
+        num_heads: int,
+        max_seq_len: int,
+        theta: float,
+        device: torch.device | None = None,
+        dtype: torch.dtype | None = None,
+    ) -> None:
+        super().__init__()
+        if d_model % num_heads != 0:
+            raise ValueError("d_model must be divisible by num_heads.")
+
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads
+        self.d_v = d_model // num_heads
+
+        self.q_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.k_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.v_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.output_proj = Linear(d_model, d_model, device=device, dtype=dtype)
+        self.rope = RotaryPositionalEmbedding(theta=theta, d_k=self.d_k, max_seq_len=max_seq_len, device=device)
+
+    def forward(self, x: torch.Tensor, token_positions: torch.Tensor | None = None) -> torch.Tensor:
+        seq_len = x.shape[-2]
+        batch_dims = x.shape[:-2]
+
+        if token_positions is None:
+            token_positions = torch.arange(seq_len, device=x.device).view(*([1] * len(batch_dims)), seq_len)
+            token_positions = token_positions.expand(*batch_dims, seq_len)
+
+        q = self.q_proj(x)
+        k = self.k_proj(x)
+        v = self.v_proj(x)
+
+        q = q.view(*batch_dims, seq_len, self.num_heads, self.d_k).transpose(-3, -2)
+        k = k.view(*batch_dims, seq_len, self.num_heads, self.d_k).transpose(-3, -2)
+        v = v.view(*batch_dims, seq_len, self.num_heads, self.d_v).transpose(-3, -2)
+
+        q = self.rope(q, token_positions)
+        k = self.rope(k, token_positions)
+
+        causal_mask = torch.tril(
+            torch.ones((seq_len, seq_len), dtype=torch.bool, device=x.device),
+            diagonal=0,
+        )
+        attn_out = scaled_dot_product_attention(q, k, v, causal_mask)
+        attn_out = attn_out.transpose(-3, -2).contiguous().view(*batch_dims, seq_len, self.d_model)
+        return self.output_proj(attn_out)
+
+
+class TransformerBlock(nn.Module):
+    def __init__(
+        self,
+        d_model: int,
+        num_heads: int,
+        d_ff: int,
+        max_seq_len: int,
+        theta: float,
+        device: torch.device | None = None,
+        dtype: torch.dtype | None = None,
+    ) -> None:
+        super().__init__()
+        self.attn = MultiHeadSelfAttentionWithRoPE(
+            d_model=d_model,
+            num_heads=num_heads,
+            max_seq_len=max_seq_len,
+            theta=theta,
+            device=device,
+            dtype=dtype,
+        )
+        self.ln1 = RMSNorm(d_model=d_model, eps=1e-5, device=device, dtype=dtype)
+        self.ffn = SwiGLU(d_model=d_model, d_ff=d_ff, device=device, dtype=dtype)
+        self.ln2 = RMSNorm(d_model=d_model, eps=1e-5, device=device, dtype=dtype)
+
+    def forward(self, x: torch.Tensor, token_positions: torch.Tensor | None = None) -> torch.Tensor:
+        x = x + self.attn(self.ln1(x), token_positions=token_positions)
+        x = x + self.ffn(self.ln2(x))
+        return x

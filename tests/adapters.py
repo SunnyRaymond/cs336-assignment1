@@ -11,9 +11,11 @@ from cs336_basics.model import (
     Embedding,
     Linear,
     MultiHeadSelfAttention,
+    MultiHeadSelfAttentionWithRoPE,
     RMSNorm,
     RotaryPositionalEmbedding,
     SwiGLU,
+    TransformerBlock,
     scaled_dot_product_attention as model_scaled_dot_product_attention,
 )
 from jaxtyping import Bool, Float, Int
@@ -221,7 +223,24 @@ def run_multihead_self_attention_with_rope(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    raise NotImplementedError
+    attn = MultiHeadSelfAttentionWithRoPE(
+        d_model=d_model,
+        num_heads=num_heads,
+        max_seq_len=max_seq_len,
+        theta=theta,
+        device=q_proj_weight.device,
+        dtype=q_proj_weight.dtype,
+    )
+    attn.load_state_dict(
+        {
+            "q_proj.W": q_proj_weight,
+            "k_proj.W": k_proj_weight,
+            "v_proj.W": v_proj_weight,
+            "output_proj.W": o_proj_weight,
+        },
+        strict=False,
+    )
+    return attn(in_features, token_positions=token_positions)
 
 
 def run_rope(
@@ -322,7 +341,28 @@ def run_transformer_block(
         Float[Tensor, "batch sequence_length d_model"] Tensor with the output of
         running the Transformer block on the input features while using RoPE.
     """
-    raise NotImplementedError
+    block = TransformerBlock(
+        d_model=d_model,
+        num_heads=num_heads,
+        d_ff=d_ff,
+        max_seq_len=max_seq_len,
+        theta=theta,
+        device=in_features.device,
+        dtype=in_features.dtype,
+    )
+    remapped = {
+        "attn.q_proj.W": weights["attn.q_proj.weight"],
+        "attn.k_proj.W": weights["attn.k_proj.weight"],
+        "attn.v_proj.W": weights["attn.v_proj.weight"],
+        "attn.output_proj.W": weights["attn.output_proj.weight"],
+        "ln1.weight": weights["ln1.weight"],
+        "ffn.w1.W": weights["ffn.w1.weight"],
+        "ffn.w2.W": weights["ffn.w2.weight"],
+        "ffn.w3.W": weights["ffn.w3.weight"],
+        "ln2.weight": weights["ln2.weight"],
+    }
+    block.load_state_dict(remapped, strict=False)
+    return block(in_features)
 
 
 def run_transformer_lm(
