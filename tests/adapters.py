@@ -591,7 +591,20 @@ def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm:
 
     The gradients of the parameters (parameter.grad) should be modified in-place.
     """
-    raise NotImplementedError
+    grads = [p.grad for p in parameters if p.grad is not None]
+    if len(grads) == 0:
+        return
+
+    eps = 1e-6
+    total_sq_norm = torch.zeros((), device=grads[0].device, dtype=grads[0].dtype)
+    for grad in grads:
+        total_sq_norm = total_sq_norm + torch.sum(grad * grad)
+
+    total_norm = torch.sqrt(total_sq_norm)
+    clip_coef = max_l2_norm / (total_norm + eps)
+    if clip_coef < 1:
+        for grad in grads:
+            grad.mul_(clip_coef)
 
 
 def get_adamw_cls() -> Any:
