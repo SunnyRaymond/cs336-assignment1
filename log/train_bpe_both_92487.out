@@ -1,0 +1,41 @@
+=== Job info ===
+Job ID: 92487
+Host: node221
+PWD:  /var/scratch/dpp2567/cs336-assignment1
+Date: Sun Mar  8 14:43:23 CET 2026
+
+=== GPU info ===
+Sun Mar  8 14:43:25 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA TITAN RTX               Off |   00000000:02:00.0 Off |                  N/A |
+| 30%   38C    P0             61W /  280W |       1MiB /  24576MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA TITAN RTX               Off |   00000000:82:00.0 Off |                  N/A |
+| 25%   36C    P0             61W /  280W |       1MiB /  24576MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+=== Python / uv info ===
+/var/scratch/dpp2567/miniconda3/bin/python
+/var/scratch/dpp2567/miniconda3/bin/uv
+Python 3.13.11
+
+[OpenWebText] Training start
+[OpenWebText] Input: data/owt_train.txt
+[OpenWebText] Input size: 11.10 GB
+[OpenWebText] vocab_size=32000 special_tokens=['<|endoftext|>'] target_merges=31743 workers=4 device=auto

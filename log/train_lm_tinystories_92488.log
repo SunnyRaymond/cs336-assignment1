@@ -1,0 +1,435 @@
+=== Job info ===
+Job ID: 92488
+Host: node203
+PWD:  /var/scratch/dpp2567/cs336-assignment1
+Date: Sun Mar  8 14:43:32 CET 2026
+
+=== GPU info ===
+Sun Mar  8 14:43:33 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:02:00.0 Off |                  N/A |
+| 17%   26C    P0             59W /  250W |       0MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:03:00.0 Off |                  N/A |
+| 17%   33C    P0             61W /  250W |       0MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:82:00.0 Off |                  N/A |
+| 16%   29C    P0             60W /  250W |       0MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   3  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:83:00.0 Off |                  N/A |
+| 14%   27C    P0             53W /  250W |       0MiB /  11264MiB |      1%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+=== Python / uv info ===
+/var/scratch/dpp2567/miniconda3/bin/python
+/var/scratch/dpp2567/miniconda3/bin/uv
+Python 3.13.11
+
+=== Path checks ===
+PROJECT_ROOT: /var/scratch/dpp2567/cs336-assignment1
+TRAIN_BIN:    data/tinystories_train_tokens.bin
+VAL_BIN:      data/tinystories_val_tokens.bin
+TRAIN_TXT:    data/TinyStoriesV2-GPT4-train.txt
+VAL_TXT:      data/TinyStoriesV2-GPT4-valid.txt
+TOKENIZER:    tinystories_bpe.pkl
+
+=== Train start ===
+step=0 lr=0 train_loss=9.247332
+[eval] step=0 train=9.244011 val=9.244578
+step=20 lr=6e-06 train_loss=9.228570
+step=40 lr=1.2e-05 train_loss=9.153013
+step=60 lr=1.8e-05 train_loss=9.085524
+step=80 lr=2.4e-05 train_loss=8.948105
+step=100 lr=3e-05 train_loss=8.773075
+step=120 lr=3.6e-05 train_loss=8.481474
+step=140 lr=4.2e-05 train_loss=8.237125
+step=160 lr=4.8e-05 train_loss=7.959533
+step=180 lr=5.4e-05 train_loss=7.638319
+step=200 lr=6e-05 train_loss=7.281489
+[eval] step=200 train=7.293893 val=7.297712
+step=220 lr=6.6e-05 train_loss=7.017258
+step=240 lr=7.2e-05 train_loss=6.657736
+step=260 lr=7.8e-05 train_loss=6.408763
+step=280 lr=8.4e-05 train_loss=6.048495
+step=300 lr=9e-05 train_loss=5.867006
+step=320 lr=9.6e-05 train_loss=5.704110
+step=340 lr=0.000102 train_loss=5.633718
+step=360 lr=0.000108 train_loss=5.394971
+step=380 lr=0.000114 train_loss=5.152879
+step=400 lr=0.00012 train_loss=4.952020
+[eval] step=400 train=5.029054 val=5.049599
+step=420 lr=0.000126 train_loss=4.808195
+step=440 lr=0.000132 train_loss=4.866800
+step=460 lr=0.000138 train_loss=4.569077
+step=480 lr=0.000144 train_loss=4.576898
+step=500 lr=0.00015 train_loss=4.529793
+step=520 lr=0.000156 train_loss=4.141048
+step=540 lr=0.000162 train_loss=3.934292
+step=560 lr=0.000168 train_loss=4.520782
+step=580 lr=0.000174 train_loss=4.460522
+step=600 lr=0.00018 train_loss=3.833820
+[eval] step=600 train=4.152150 val=4.161217
+step=620 lr=0.000186 train_loss=3.746668
+step=640 lr=0.000192 train_loss=4.317169
+step=660 lr=0.000198 train_loss=3.863219
+step=680 lr=0.000204 train_loss=4.046829
+step=700 lr=0.00021 train_loss=4.050040
+step=720 lr=0.000216 train_loss=3.766982
+step=740 lr=0.000222 train_loss=3.624967
+step=760 lr=0.000228 train_loss=3.742575
+step=780 lr=0.000234 train_loss=3.782465
+step=800 lr=0.00024 train_loss=3.717773
+[eval] step=800 train=3.818047 val=3.785115
+step=820 lr=0.000246 train_loss=3.755008
+step=840 lr=0.000252 train_loss=3.689081
+step=860 lr=0.000258 train_loss=3.667094
+step=880 lr=0.000264 train_loss=3.362008
+step=900 lr=0.00027 train_loss=4.080142
+step=920 lr=0.000276 train_loss=3.595652
+step=940 lr=0.000282 train_loss=3.904945
+step=960 lr=0.000288 train_loss=3.766000
+step=980 lr=0.000294 train_loss=3.783858
+step=1000 lr=0.0003 train_loss=3.514683
+[eval] step=1000 train=3.575742 val=3.537819
+step=1020 lr=0.000299999 train_loss=3.223965
+step=1040 lr=0.000299997 train_loss=3.773987
+step=1060 lr=0.000299993 train_loss=3.351489
+step=1080 lr=0.000299988 train_loss=3.194531
+step=1100 lr=0.000299982 train_loss=3.434538
+step=1120 lr=0.000299973 train_loss=3.785809
+step=1140 lr=0.000299964 train_loss=3.188234
+step=1160 lr=0.000299953 train_loss=3.417798
+step=1180 lr=0.00029994 train_loss=3.182848
+step=1200 lr=0.000299926 train_loss=3.284547
+[eval] step=1200 train=3.396504 val=3.419771
+step=1220 lr=0.000299911 train_loss=3.356093
+step=1240 lr=0.000299894 train_loss=3.427966
+step=1260 lr=0.000299875 train_loss=3.348387
+step=1280 lr=0.000299855 train_loss=3.542454
+step=1300 lr=0.000299834 train_loss=3.199702
+step=1320 lr=0.000299811 train_loss=3.002882
+step=1340 lr=0.000299787 train_loss=3.225750
+step=1360 lr=0.000299761 train_loss=3.364722
+step=1380 lr=0.000299734 train_loss=3.436585
+step=1400 lr=0.000299705 train_loss=3.331634
+[eval] step=1400 train=3.291686 val=3.272967
+step=1420 lr=0.000299675 train_loss=3.418187
+step=1440 lr=0.000299643 train_loss=3.196965
+step=1460 lr=0.00029961 train_loss=3.282053
+step=1480 lr=0.000299575 train_loss=3.263727
+step=1500 lr=0.000299539 train_loss=2.966372
+step=1520 lr=0.000299501 train_loss=3.365433
+step=1540 lr=0.000299462 train_loss=3.000869
+step=1560 lr=0.000299422 train_loss=3.042535
+step=1580 lr=0.00029938 train_loss=2.960409
+step=1600 lr=0.000299336 train_loss=3.258640
+[eval] step=1600 train=3.195029 val=3.155555
+step=1620 lr=0.000299291 train_loss=2.870617
+step=1640 lr=0.000299245 train_loss=3.408571
+step=1660 lr=0.000299197 train_loss=2.836459
+step=1680 lr=0.000299148 train_loss=3.319400
+step=1700 lr=0.000299097 train_loss=2.965408
+step=1720 lr=0.000299044 train_loss=3.195724
+step=1740 lr=0.000298991 train_loss=2.965542
+step=1760 lr=0.000298935 train_loss=2.854146
+step=1780 lr=0.000298879 train_loss=3.300210
+step=1800 lr=0.000298821 train_loss=3.363149
+[eval] step=1800 train=3.101064 val=3.052862
+step=1820 lr=0.000298761 train_loss=3.041852
+step=1840 lr=0.0002987 train_loss=3.245490
+step=1860 lr=0.000298637 train_loss=3.349027
+step=1880 lr=0.000298573 train_loss=3.287734
+step=1900 lr=0.000298508 train_loss=2.748247
+step=1920 lr=0.000298441 train_loss=2.905182
+step=1940 lr=0.000298373 train_loss=2.835275
+step=1960 lr=0.000298303 train_loss=3.143244
+step=1980 lr=0.000298232 train_loss=3.303499
+step=2000 lr=0.000298159 train_loss=3.273739
+[eval] step=2000 train=3.072794 val=3.012220
+step=2020 lr=0.000298085 train_loss=3.102746
+step=2040 lr=0.000298009 train_loss=3.065866
+step=2060 lr=0.000297932 train_loss=3.074784
+step=2080 lr=0.000297853 train_loss=2.753168
+step=2100 lr=0.000297773 train_loss=2.822658
+step=2120 lr=0.000297692 train_loss=3.025742
+step=2140 lr=0.000297609 train_loss=3.083091
+step=2160 lr=0.000297524 train_loss=2.810619
+step=2180 lr=0.000297439 train_loss=3.139505
+step=2200 lr=0.000297351 train_loss=2.795846
+[eval] step=2200 train=3.016126 val=3.007400
+step=2220 lr=0.000297263 train_loss=2.893316
+step=2240 lr=0.000297172 train_loss=3.451757
+step=2260 lr=0.000297081 train_loss=3.113033
+step=2280 lr=0.000296988 train_loss=3.137025
+step=2300 lr=0.000296893 train_loss=2.762181
+step=2320 lr=0.000296797 train_loss=3.012366
+step=2340 lr=0.0002967 train_loss=2.721570
+step=2360 lr=0.000296601 train_loss=3.137255
+step=2380 lr=0.000296501 train_loss=3.052434
+step=2400 lr=0.000296399 train_loss=2.892965
+[eval] step=2400 train=3.051001 val=2.979028
+step=2420 lr=0.000296296 train_loss=2.669445
+step=2440 lr=0.000296191 train_loss=2.823083
+step=2460 lr=0.000296085 train_loss=2.726363
+step=2480 lr=0.000295978 train_loss=2.627652
+step=2500 lr=0.000295869 train_loss=2.843704
+step=2520 lr=0.000295759 train_loss=3.094114
+step=2540 lr=0.000295647 train_loss=2.937914
+step=2560 lr=0.000295534 train_loss=3.223300
+step=2580 lr=0.000295419 train_loss=2.790761
+step=2600 lr=0.000295303 train_loss=3.047843
+[eval] step=2600 train=2.982641 val=2.874570
+step=2620 lr=0.000295186 train_loss=3.495765
+step=2640 lr=0.000295067 train_loss=2.819132
+step=2660 lr=0.000294947 train_loss=3.087165
+step=2680 lr=0.000294825 train_loss=2.969577
+step=2700 lr=0.000294702 train_loss=2.701687
+step=2720 lr=0.000294577 train_loss=3.020900
+step=2740 lr=0.000294451 train_loss=3.029283
+step=2760 lr=0.000294324 train_loss=2.768040
+step=2780 lr=0.000294195 train_loss=2.747208
+step=2800 lr=0.000294065 train_loss=3.114062
+[eval] step=2800 train=2.894461 val=2.914859
+step=2820 lr=0.000293933 train_loss=2.787628
+step=2840 lr=0.0002938 train_loss=3.114225
+step=2860 lr=0.000293666 train_loss=2.779656
+step=2880 lr=0.00029353 train_loss=2.733066
+step=2900 lr=0.000293393 train_loss=2.910994
+step=2920 lr=0.000293254 train_loss=2.875618
+step=2940 lr=0.000293114 train_loss=3.358282
+step=2960 lr=0.000292972 train_loss=2.426644
+step=2980 lr=0.00029283 train_loss=2.760644
+step=3000 lr=0.000292685 train_loss=2.881397
+[eval] step=3000 train=2.862671 val=2.801507
+step=3020 lr=0.00029254 train_loss=2.696797
+step=3040 lr=0.000292393 train_loss=2.918045
+step=3060 lr=0.000292244 train_loss=2.839011
+step=3080 lr=0.000292094 train_loss=2.615497
+step=3100 lr=0.000291943 train_loss=2.879839
+step=3120 lr=0.000291791 train_loss=3.153397
+step=3140 lr=0.000291637 train_loss=2.879657
+step=3160 lr=0.000291481 train_loss=2.993475
+step=3180 lr=0.000291324 train_loss=3.078598
+step=3200 lr=0.000291166 train_loss=2.686315
+[eval] step=3200 train=2.851219 val=2.807578
+step=3220 lr=0.000291007 train_loss=2.858920
+step=3240 lr=0.000290846 train_loss=2.639808
+step=3260 lr=0.000290683 train_loss=2.991917
+step=3280 lr=0.00029052 train_loss=2.769251
+step=3300 lr=0.000290355 train_loss=3.196514
+step=3320 lr=0.000290188 train_loss=2.718056
+step=3340 lr=0.000290021 train_loss=2.566100
+step=3360 lr=0.000289851 train_loss=2.299967
+step=3380 lr=0.000289681 train_loss=2.642123
+step=3400 lr=0.000289509 train_loss=2.692495
+[eval] step=3400 train=2.822983 val=2.832545
+step=3420 lr=0.000289336 train_loss=2.750801
+step=3440 lr=0.000289161 train_loss=2.507232
+step=3460 lr=0.000288985 train_loss=3.041228
+step=3480 lr=0.000288808 train_loss=2.686909
+step=3500 lr=0.000288629 train_loss=2.735755
+step=3520 lr=0.000288449 train_loss=2.901975
+step=3540 lr=0.000288268 train_loss=2.790733
+step=3560 lr=0.000288085 train_loss=2.803317
+step=3580 lr=0.000287901 train_loss=2.641498
+step=3600 lr=0.000287716 train_loss=2.654420
+[eval] step=3600 train=2.800761 val=2.809674
+step=3620 lr=0.000287529 train_loss=2.651528
+step=3640 lr=0.000287341 train_loss=2.596529
+step=3660 lr=0.000287152 train_loss=3.042387
+step=3680 lr=0.000286961 train_loss=2.855553
+step=3700 lr=0.000286769 train_loss=2.926803
+step=3720 lr=0.000286575 train_loss=2.823649
+step=3740 lr=0.000286381 train_loss=2.663450
+step=3760 lr=0.000286185 train_loss=2.969856
+step=3780 lr=0.000285987 train_loss=2.757666
+step=3800 lr=0.000285788 train_loss=2.833926
+[eval] step=3800 train=2.802509 val=2.738993
+step=3820 lr=0.000285588 train_loss=2.951561
+step=3840 lr=0.000285387 train_loss=2.861480
+step=3860 lr=0.000285184 train_loss=2.664029
+step=3880 lr=0.00028498 train_loss=2.697467
+step=3900 lr=0.000284775 train_loss=2.640123
+step=3920 lr=0.000284568 train_loss=3.028340
+step=3940 lr=0.000284361 train_loss=2.611848
+step=3960 lr=0.000284151 train_loss=2.890815
+step=3980 lr=0.000283941 train_loss=2.693223
+step=4000 lr=0.000283729 train_loss=2.676103
+[eval] step=4000 train=2.750722 val=2.735926
+step=4020 lr=0.000283516 train_loss=2.566988
+step=4040 lr=0.000283301 train_loss=2.870941
+step=4060 lr=0.000283086 train_loss=2.622501
+step=4080 lr=0.000282869 train_loss=2.683642
+step=4100 lr=0.00028265 train_loss=2.541170
+step=4120 lr=0.000282431 train_loss=2.622020
+step=4140 lr=0.00028221 train_loss=3.027236
+step=4160 lr=0.000281988 train_loss=2.840753
+step=4180 lr=0.000281764 train_loss=2.813241
+step=4200 lr=0.00028154 train_loss=2.883547
+[eval] step=4200 train=2.741798 val=2.713868
+step=4220 lr=0.000281314 train_loss=2.822159
+step=4240 lr=0.000281086 train_loss=2.496125
+step=4260 lr=0.000280858 train_loss=2.710064
+step=4280 lr=0.000280628 train_loss=2.440667
+step=4300 lr=0.000280397 train_loss=2.779760
+step=4320 lr=0.000280165 train_loss=2.648372
+step=4340 lr=0.000279931 train_loss=2.484412
+step=4360 lr=0.000279696 train_loss=2.556894
+step=4380 lr=0.00027946 train_loss=2.842394
+step=4400 lr=0.000279223 train_loss=2.630572
+[eval] step=4400 train=2.759782 val=2.703700
+step=4420 lr=0.000278984 train_loss=2.767562
+step=4440 lr=0.000278744 train_loss=2.745535
+step=4460 lr=0.000278503 train_loss=2.825076
+step=4480 lr=0.000278261 train_loss=2.634680
+step=4500 lr=0.000278017 train_loss=2.684380
+step=4520 lr=0.000277773 train_loss=2.613242
+step=4540 lr=0.000277527 train_loss=2.560346
+step=4560 lr=0.000277279 train_loss=2.499948
+step=4580 lr=0.000277031 train_loss=2.424708
+step=4600 lr=0.000276781 train_loss=3.024278
+[eval] step=4600 train=2.674191 val=2.721693
+step=4620 lr=0.00027653 train_loss=2.721954
+step=4640 lr=0.000276278 train_loss=2.555580
+step=4660 lr=0.000276025 train_loss=2.724777
+step=4680 lr=0.00027577 train_loss=2.608650
+step=4700 lr=0.000275514 train_loss=2.532473
+step=4720 lr=0.000275257 train_loss=2.688313
+step=4740 lr=0.000274999 train_loss=2.665436
+step=4760 lr=0.00027474 train_loss=2.830252
+step=4780 lr=0.000274479 train_loss=2.405916
+step=4800 lr=0.000274217 train_loss=2.667191
+[eval] step=4800 train=2.690264 val=2.690903
+step=4820 lr=0.000273954 train_loss=2.478448
+step=4840 lr=0.00027369 train_loss=2.636123
+step=4860 lr=0.000273425 train_loss=2.834870
+step=4880 lr=0.000273158 train_loss=2.717334
+step=4900 lr=0.00027289 train_loss=2.667561
+step=4920 lr=0.000272621 train_loss=2.651739
+step=4940 lr=0.000272351 train_loss=2.546528
+step=4960 lr=0.00027208 train_loss=2.786884
+step=4980 lr=0.000271808 train_loss=2.663738
+step=5000 lr=0.000271534 train_loss=2.674652
+[eval] step=5000 train=2.636598 val=2.653898
+step=5020 lr=0.000271259 train_loss=2.765051
+step=5040 lr=0.000270983 train_loss=2.745218
+step=5060 lr=0.000270706 train_loss=2.551978
+step=5080 lr=0.000270428 train_loss=2.834530
+step=5100 lr=0.000270148 train_loss=2.719724
+step=5120 lr=0.000269868 train_loss=2.491646
+step=5140 lr=0.000269586 train_loss=2.703114
+step=5160 lr=0.000269303 train_loss=2.718649
+step=5180 lr=0.000269019 train_loss=2.558599
+step=5200 lr=0.000268734 train_loss=2.474556
+[eval] step=5200 train=2.657881 val=2.619438
+step=5220 lr=0.000268448 train_loss=2.669042
+step=5240 lr=0.00026816 train_loss=2.370475
+step=5260 lr=0.000267872 train_loss=2.423638
+step=5280 lr=0.000267582 train_loss=2.761062
+step=5300 lr=0.000267292 train_loss=2.680758
+step=5320 lr=0.000267 train_loss=2.854935
+step=5340 lr=0.000266707 train_loss=2.496143
+step=5360 lr=0.000266412 train_loss=2.975730
+step=5380 lr=0.000266117 train_loss=2.422726
+step=5400 lr=0.000265821 train_loss=2.594841
+[eval] step=5400 train=2.612751 val=2.630991
+step=5420 lr=0.000265523 train_loss=2.919046
+step=5440 lr=0.000265225 train_loss=2.505954
+step=5460 lr=0.000264925 train_loss=2.582512
+step=5480 lr=0.000264625 train_loss=2.754740
+step=5500 lr=0.000264323 train_loss=2.662199
+step=5520 lr=0.00026402 train_loss=2.604671
+step=5540 lr=0.000263716 train_loss=2.665583
+step=5560 lr=0.000263411 train_loss=2.720587
+step=5580 lr=0.000263105 train_loss=2.485261
+step=5600 lr=0.000262797 train_loss=2.914429
+[eval] step=5600 train=2.583155 val=2.576618
+step=5620 lr=0.000262489 train_loss=2.366078
+step=5640 lr=0.00026218 train_loss=2.499151
+step=5660 lr=0.000261869 train_loss=2.484262
+step=5680 lr=0.000261558 train_loss=2.856881
+step=5700 lr=0.000261245 train_loss=2.703234
+step=5720 lr=0.000260932 train_loss=2.448639
+step=5740 lr=0.000260617 train_loss=2.355071
+step=5760 lr=0.000260301 train_loss=2.746028
+step=5780 lr=0.000259985 train_loss=2.566309
+step=5800 lr=0.000259667 train_loss=2.804308
+[eval] step=5800 train=2.620119 val=2.581080
+step=5820 lr=0.000259348 train_loss=2.633952
+step=5840 lr=0.000259028 train_loss=2.954758
+step=5860 lr=0.000258707 train_loss=2.525813
+step=5880 lr=0.000258386 train_loss=2.807012
+step=5900 lr=0.000258063 train_loss=2.792256
+step=5920 lr=0.000257739 train_loss=2.622891
+step=5940 lr=0.000257414 train_loss=2.345965
+step=5960 lr=0.000257088 train_loss=2.860938
+step=5980 lr=0.000256761 train_loss=2.797377
+step=6000 lr=0.000256433 train_loss=2.707082
+[eval] step=6000 train=2.594043 val=2.646926
+step=6020 lr=0.000256104 train_loss=2.552655
+step=6040 lr=0.000255774 train_loss=2.530250
+step=6060 lr=0.000255443 train_loss=2.669789
+step=6080 lr=0.000255111 train_loss=2.660282
+step=6100 lr=0.000254778 train_loss=2.316259
+step=6120 lr=0.000254444 train_loss=2.318598
+step=6140 lr=0.00025411 train_loss=2.683424
+step=6160 lr=0.000253774 train_loss=2.571882
+step=6180 lr=0.000253437 train_loss=2.552436
+step=6200 lr=0.000253099 train_loss=2.972047
+[eval] step=6200 train=2.528398 val=2.646856
+step=6220 lr=0.00025276 train_loss=2.987336
+step=6240 lr=0.000252421 train_loss=2.715986
+step=6260 lr=0.00025208 train_loss=2.410601
+step=6280 lr=0.000251738 train_loss=2.446798
+step=6300 lr=0.000251396 train_loss=2.783587
+step=6320 lr=0.000251052 train_loss=2.744531
+step=6340 lr=0.000250708 train_loss=2.608786
+step=6360 lr=0.000250362 train_loss=2.743209
+step=6380 lr=0.000250016 train_loss=2.798279
+step=6400 lr=0.000249669 train_loss=2.438887
+[eval] step=6400 train=2.619426 val=2.599696
+step=6420 lr=0.000249321 train_loss=2.260360
+step=6440 lr=0.000248972 train_loss=2.991431
+step=6460 lr=0.000248622 train_loss=2.484626
+step=6480 lr=0.000248271 train_loss=2.685763
+step=6500 lr=0.000247919 train_loss=2.398338
+step=6520 lr=0.000247566 train_loss=2.406124
+step=6540 lr=0.000247212 train_loss=2.495685
+step=6560 lr=0.000246858 train_loss=2.511890
+step=6580 lr=0.000246502 train_loss=2.392952
+step=6600 lr=0.000246146 train_loss=2.566829
+[eval] step=6600 train=2.559727 val=2.578297
+step=6620 lr=0.000245789 train_loss=2.622532
+step=6640 lr=0.000245431 train_loss=2.495880
+step=6660 lr=0.000245072 train_loss=2.537549
+step=6680 lr=0.000244712 train_loss=2.334794
+step=6700 lr=0.000244351 train_loss=2.363760
+step=6720 lr=0.000243989 train_loss=2.435848
+step=6740 lr=0.000243627 train_loss=2.667782
+step=6760 lr=0.000243264 train_loss=2.290251
+step=6780 lr=0.000242899 train_loss=2.664245
+step=6800 lr=0.000242534 train_loss=2.886533
+[eval] step=6800 train=2.565049 val=2.545451
+step=6820 lr=0.000242168 train_loss=2.639822
+step=6840 lr=0.000241802 train_loss=2.904754
+step=6860 lr=0.000241434 train_loss=2.757547
+step=6880 lr=0.000241066 train_loss=2.100100
+step=6900 lr=0.000240697 train_loss=2.486538
