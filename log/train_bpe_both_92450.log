@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/var/scratch/dpp2567/cs336-assignment1/train_bpe_datasets.py", line 156, in <module>
+    main()
+    ~~~~^^
+  File "/var/scratch/dpp2567/cs336-assignment1/train_bpe_datasets.py", line 141, in main
+    raise RuntimeError(f"Dataset training failed in process(es): {failed}")
+RuntimeError: Dataset training failed in process(es): [202556]
