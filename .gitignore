@@ -167,3 +167,6 @@ cython_debug/
 
 # omit vs code settings
 .vscode/
+
+# omit pt file in checkpoints directory
+/checkpoints/*.pt
