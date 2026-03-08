@@ -16,6 +16,7 @@ from cs336_basics.model import (
     RotaryPositionalEmbedding,
     SwiGLU,
     TransformerBlock,
+    TransformerLM,
     scaled_dot_product_attention as model_scaled_dot_product_attention,
 )
 from jaxtyping import Bool, Float, Int
@@ -444,7 +445,37 @@ def run_transformer_lm(
         Float[Tensor, "batch_size sequence_length vocab_size"]: Tensor with the predicted unnormalized
         next-word distribution for each token.
     """
-    raise NotImplementedError
+    model = TransformerLM(
+        vocab_size=vocab_size,
+        context_length=context_length,
+        d_model=d_model,
+        num_layers=num_layers,
+        num_heads=num_heads,
+        d_ff=d_ff,
+        rope_theta=rope_theta,
+        device=in_indices.device,
+        dtype=weights["token_embeddings.weight"].dtype,
+    )
+
+    remapped: dict[str, Tensor] = {
+        "token_embeddings.weight": weights["token_embeddings.weight"],
+        "ln_final.weight": weights["ln_final.weight"],
+        "lm_head.W": weights["lm_head.weight"],
+    }
+    for layer_idx in range(num_layers):
+        prefix = f"layers.{layer_idx}"
+        remapped[f"{prefix}.attn.q_proj.W"] = weights[f"{prefix}.attn.q_proj.weight"]
+        remapped[f"{prefix}.attn.k_proj.W"] = weights[f"{prefix}.attn.k_proj.weight"]
+        remapped[f"{prefix}.attn.v_proj.W"] = weights[f"{prefix}.attn.v_proj.weight"]
+        remapped[f"{prefix}.attn.output_proj.W"] = weights[f"{prefix}.attn.output_proj.weight"]
+        remapped[f"{prefix}.ln1.weight"] = weights[f"{prefix}.ln1.weight"]
+        remapped[f"{prefix}.ffn.w1.W"] = weights[f"{prefix}.ffn.w1.weight"]
+        remapped[f"{prefix}.ffn.w2.W"] = weights[f"{prefix}.ffn.w2.weight"]
+        remapped[f"{prefix}.ffn.w3.W"] = weights[f"{prefix}.ffn.w3.weight"]
+        remapped[f"{prefix}.ln2.weight"] = weights[f"{prefix}.ln2.weight"]
+
+    model.load_state_dict(remapped, strict=False)
+    return model(in_indices)
 
 
 def run_rmsnorm(
