@@ -42,7 +42,7 @@ which uv || true
 python --version || true
 echo
 
-uv run train_bpe_datasets.py --dataset owt --parallel-datasets --device auto --workers 8
+uv run train_bpe_datasets.py --dataset owt --owt-input data/owt_train.txt --owt-output owt_bpe.pkl --vocab-size 32000 --workers 16 --device auto
 
 echo "=== Done ==="
 date
