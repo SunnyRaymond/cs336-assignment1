@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=train_lm_tinystories
 #SBATCH --partition=fatq
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=16
+#SBATCH --gres=gpu:4
+#SBATCH --cpus-per-task=32
 #SBATCH --mem=100G
 #SBATCH --time=12:00:00
 #SBATCH --output=log/%x_%j.log
@@ -72,17 +72,17 @@ if [[ ! -f "$TRAIN_BIN" || ! -f "$VAL_BIN" ]]; then
 fi
 
 echo "=== Train start ==="
-uv run cs336_basics/train_lm.py \
+uv run torchrun --standalone --nproc_per_node=4 cs336_basics/train_lm.py \
   --train_data "$TRAIN_BIN" \
   --val_data "$VAL_BIN" \
   --data_dtype uint16 \
   --vocab_size 10000 \
-  --context_length 128 \
-  --d_model 256 \
-  --num_layers 4 \
-  --num_heads 4 \
-  --d_ff 768 \
-  --batch_size 8 \
+  --context_length 192 \
+  --d_model 384 \
+  --num_layers 6 \
+  --num_heads 6 \
+  --d_ff 1152 \
+  --batch_size 12 \
   --max_steps 20000 \
   --eval_every 200 \
   --eval_iters 50 \
@@ -92,7 +92,7 @@ uv run cs336_basics/train_lm.py \
   --warmup_iters 1000 \
   --cosine_cycle_iters 20000 \
   --weight_decay 0.1 \
-  --amp_dtype bf16 \
+  --amp_dtype fp16 \
   --checkpoint_path checkpoints/tinystories_lm.pt \
   --save_every 500
 

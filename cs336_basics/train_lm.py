@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
 import torch
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 from cs336_basics.model import TransformerLM, cross_entropy
 from cs336_basics.optimizer import AdamW
@@ -122,8 +125,21 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
 
+    world_size = int(os.environ.get("WORLD_SIZE", "1"))
+    rank = int(os.environ.get("RANK", "0"))
+    local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+    use_ddp = world_size > 1
+
+    if use_ddp:
+        dist.init_process_group(backend="nccl")
+        torch.cuda.set_device(local_rank)
+        args.device = f"cuda:{local_rank}"
+
     train_data = np.memmap(args.train_data, mode="r", dtype=args.data_dtype)
     val_data = np.memmap(args.val_data, mode="r", dtype=args.data_dtype)
+
+    np.random.seed(1337 + rank)
+    torch.manual_seed(1337 + rank)
 
     model = TransformerLM(
         vocab_size=args.vocab_size,
@@ -135,8 +151,12 @@ def main() -> None:
         rope_theta=args.rope_theta,
         device=torch.device(args.device),
     ).to(args.device)
+    model_for_train: torch.nn.Module = model
+    if use_ddp:
+        model_for_train = DDP(model, device_ids=[local_rank], output_device=local_rank)
+
     optimizer = AdamW(
-        model.parameters(),
+        model_for_train.parameters(),
         lr=args.max_lr,
         betas=(args.beta1, args.beta2),
         eps=args.eps,
@@ -146,17 +166,19 @@ def main() -> None:
     start_step = 0
     if args.resume and args.checkpoint_path.exists():
         ckpt = torch.load(args.checkpoint_path, map_location="cpu")
-        model.load_state_dict(ckpt["model_state_dict"])
+        model_for_train.load_state_dict(ckpt["model_state_dict"])
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         start_step = int(ckpt["step"]) + 1
 
     wandb_run = None
-    if args.use_wandb:
+    if args.use_wandb and rank == 0:
         import wandb
 
         wandb_run = wandb.init(project=args.wandb_project, config=vars(args))
 
-    model.train()
+    scaler = torch.amp.GradScaler(enabled=args.amp_dtype == "fp16")
+
+    model_for_train.train()
     if args.device.startswith("cuda") and args.amp_dtype in {"bf16", "fp16"}:
         amp_t = torch.bfloat16 if args.amp_dtype == "bf16" else torch.float16
         autocast_ctx = lambda: torch.amp.autocast(device_type="cuda", dtype=amp_t)  # noqa: E731
@@ -170,40 +192,50 @@ def main() -> None:
 
         x, y = get_batch(train_data, args.batch_size, args.context_length, args.device)
         with autocast_ctx():
-            logits = model(x)
+            logits = model_for_train(x)
         loss = cross_entropy(logits.float().view(-1, logits.size(-1)), y.view(-1))
 
         optimizer.zero_grad(set_to_none=True)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
-        optimizer.step()
+        scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model_for_train.parameters(), args.grad_clip)
+        scaler.step(optimizer)
+        scaler.update()
 
-        if step % args.log_every == 0:
+        if step % args.log_every == 0 and rank == 0:
             print(f"step={step} lr={lr:.6g} train_loss={loss.item():.6f}")
             if wandb_run is not None:
                 wandb_run.log({"step": step, "lr": lr, "train_loss": float(loss.item())}, step=step)
 
         if step % args.eval_every == 0:
-            train_eval, val_eval = estimate_loss(
-                model,
-                train_data,
-                val_data,
-                args.batch_size,
-                args.context_length,
-                args.eval_iters,
-                args.device,
-                args.amp_dtype,
-            )
-            print(f"[eval] step={step} train={train_eval:.6f} val={val_eval:.6f}")
-            if wandb_run is not None:
-                wandb_run.log({"step": step, "eval_train_loss": train_eval, "eval_val_loss": val_eval}, step=step)
+            if use_ddp:
+                dist.barrier()
+            if rank == 0:
+                train_eval, val_eval = estimate_loss(
+                    model,
+                    train_data,
+                    val_data,
+                    args.batch_size,
+                    args.context_length,
+                    args.eval_iters,
+                    "cuda:0" if use_ddp else args.device,
+                    args.amp_dtype,
+                )
+                print(f"[eval] step={step} train={train_eval:.6f} val={val_eval:.6f}")
+                if wandb_run is not None:
+                    wandb_run.log({"step": step, "eval_train_loss": train_eval, "eval_val_loss": val_eval}, step=step)
+            if use_ddp:
+                dist.barrier()
 
-        if step % args.save_every == 0:
-            save_checkpoint(args.checkpoint_path, model, optimizer, step)
+        if step % args.save_every == 0 and rank == 0:
+            save_checkpoint(args.checkpoint_path, model_for_train, optimizer, step)
 
-    save_checkpoint(args.checkpoint_path, model, optimizer, args.max_steps - 1)
+    if rank == 0:
+        save_checkpoint(args.checkpoint_path, model_for_train, optimizer, args.max_steps - 1)
     if wandb_run is not None:
         wandb_run.finish()
+    if use_ddp:
+        dist.destroy_process_group()
 
 
 if __name__ == "__main__":
