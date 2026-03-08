@@ -73,7 +73,7 @@ def main() -> None:
     )
 
     parser.add_argument("--vocab-size", type=int, default=10000)
-    parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    parser.add_argument("--workers", type=int, default=min(4, max(1, (os.cpu_count() or 2) - 1)))
     parser.add_argument(
         "--device",
         default="auto",

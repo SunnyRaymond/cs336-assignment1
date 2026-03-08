@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import multiprocessing as mp
 import os
 import pickle
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Iterator
 import json
+from multiprocessing.pool import ThreadPool
 
 import regex
 import torch
@@ -174,22 +174,42 @@ def _count_pretokens_in_segment(segment: str) -> Counter[bytes]:
     return counts
 
 
+def _iter_non_special_segments(corpus: str, special_tokens: list[str]) -> Iterator[str]:
+    if not special_tokens:
+        yield corpus
+        return
+
+    special_pattern = "|".join(regex.escape(t) for t in sorted(special_tokens, key=len, reverse=True))
+    special_re = regex.compile(special_pattern)
+    start = 0
+    for match in special_re.finditer(corpus):
+        if match.start() > start:
+            yield corpus[start:match.start()]
+        start = match.end()
+    if start < len(corpus):
+        yield corpus[start:]
+
+
 def _count_pretokens(
-    segments: list[str],
+    corpus: str,
+    special_tokens: list[str],
     num_workers: int,
 ) -> Counter[bytes]:
-    if num_workers <= 1 or len(segments) <= 1:
+    if num_workers <= 1:
         counts: Counter[bytes] = Counter()
-        for segment in segments:
+        for segment in _iter_non_special_segments(corpus, special_tokens):
             counts.update(_count_pretokens_in_segment(segment))
         return counts
 
-    with mp.Pool(processes=num_workers) as pool:
-        partial_counts = pool.map(_count_pretokens_in_segment, segments)
-
     merged: Counter[bytes] = Counter()
-    for part in partial_counts:
-        merged.update(part)
+    worker_count = max(1, min(num_workers, 8))
+    with ThreadPool(processes=worker_count) as pool:
+        for part in pool.imap_unordered(
+            _count_pretokens_in_segment,
+            _iter_non_special_segments(corpus, special_tokens),
+            chunksize=32,
+        ):
+            merged.update(part)
     return merged
 
 
@@ -242,14 +262,11 @@ def train_bpe(
     with open(input_path, "r", encoding="utf-8") as f:
         corpus = f.read()
 
-    # Split on special tokens and ignore them during BPE training.
-    if special_tokens:
-        special_pattern = "|".join(regex.escape(t) for t in sorted(special_tokens, key=len, reverse=True))
-        segments = regex.split(special_pattern, corpus)
-    else:
-        segments = [corpus]
-
-    pretoken_counts = _count_pretokens(segments, num_workers=num_workers)
+    pretoken_counts = _count_pretokens(
+        corpus=corpus,
+        special_tokens=special_tokens,
+        num_workers=num_workers,
+    )
 
     # Base vocab always contains all byte values.
     token_bytes: list[bytes] = [bytes([i]) for i in range(256)]
