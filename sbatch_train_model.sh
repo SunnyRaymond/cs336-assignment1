@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=100G
 #SBATCH --time=12:00:00
-#SBATCH --output=log/%x_%j.out
+#SBATCH --output=log/%x_%j.log
 #SBATCH --error=log/%x_%j.log
 
 set -euo pipefail
@@ -41,17 +41,11 @@ which uv || true
 python --version || true
 echo
 
-uv run cs336_basics/train_lm.py `
-  --train_data data/train_tokens.bin `
-  --val_data data/val_tokens.bin `
-  --vocab_size 10000 `
-  --context_length 128 `
-  --d_model 256 `
-  --num_layers 4 `
-  --num_heads 4 `
-  --d_ff 768 `
-  --max_steps 2000 `
-  --batch_size 32
+uv run cs336_basics/train_lm.py \
+  --train_data data/tinystories_train_tokens.bin \
+  --val_data data/tinystories_val_tokens.bin \
+  --vocab_size 10000
+
 
 echo "=== Done ==="
 date
