@@ -47,3 +47,12 @@ uv run cs336_basics/train_lm.py `
   --resume
 ```
 
+## Decoding
+
+Use [`decoding.py`](./decoding.py) for generation with:
+
+- prompt continuation
+- `max_new_tokens`
+- temperature scaling
+- top-p (nucleus) sampling
+- optional stop on `<|endoftext|>`
