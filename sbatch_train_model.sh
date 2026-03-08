@@ -77,23 +77,23 @@ uv run torchrun --standalone --nproc_per_node=4 cs336_basics/train_lm.py \
   --val_data "$VAL_BIN" \
   --data_dtype uint16 \
   --vocab_size 10000 \
-  --context_length 192 \
-  --d_model 384 \
-  --num_layers 6 \
-  --num_heads 6 \
-  --d_ff 1152 \
-  --batch_size 12 \
+  --context_length 256 \
+  --d_model 640 \
+  --num_layers 10 \
+  --num_heads 10 \
+  --d_ff 1920 \
+  --batch_size 32 \
   --max_steps 20000 \
   --eval_every 200 \
   --eval_iters 50 \
   --log_every 20 \
-  --max_lr 3e-4 \
-  --min_lr 3e-5 \
-  --warmup_iters 1000 \
+  --max_lr 5e-4 \
+  --min_lr 5e-5 \
+  --warmup_iters 1500 \
   --cosine_cycle_iters 20000 \
   --weight_decay 0.1 \
   --amp_dtype fp16 \
-  --checkpoint_path checkpoints/tinystories_lm.pt \
+  --checkpoint_path checkpoints/tinystories_lm_b128.pt \
   --save_every 500
 
 
