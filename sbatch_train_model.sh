@@ -1,7 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=train_bpe_both
-#SBATCH --partition=defq
-#SBATCH --constraint=TitanRTX
+#SBATCH --partition=fatq
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=100G
