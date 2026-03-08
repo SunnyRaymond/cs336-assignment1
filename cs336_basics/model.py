@@ -4,6 +4,24 @@ import torch
 from torch import nn
 
 
+def scaled_dot_product_attention(
+    Q: torch.Tensor,
+    K: torch.Tensor,
+    V: torch.Tensor,
+    mask: torch.Tensor | None = None,
+) -> torch.Tensor:
+    d_k = Q.shape[-1]
+    scale = 1.0 / math.sqrt(d_k)
+    attn_logits = torch.matmul(Q, K.transpose(-1, -2)) * scale
+
+    if mask is not None:
+        attn_logits = attn_logits.masked_fill(~mask, float("-inf"))
+
+    attn_probs = torch.softmax(attn_logits, dim=-1)
+    attn_probs = torch.nan_to_num(attn_probs, nan=0.0)
+    return torch.matmul(attn_probs, V)
+
+
 class Linear(nn.Module):
     def __init__(
         self,
