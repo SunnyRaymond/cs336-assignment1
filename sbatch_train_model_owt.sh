@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=train_lm_owt_gpt2
+#SBATCH --job-name=train_lm_owt
 #SBATCH --partition=fatq
 #SBATCH --gres=gpu:4
 #SBATCH --cpus-per-task=32
