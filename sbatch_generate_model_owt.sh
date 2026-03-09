@@ -36,8 +36,6 @@ python --version || true
 echo
 
 CHECKPOINT_PATH="checkpoints/owt_lm_gpt2tok.pt"
-TOKENIZER_VOCAB="tests/fixtures/gpt2_vocab.json"
-TOKENIZER_MERGES="tests/fixtures/gpt2_merges.txt"
 PROMPT="In a shocking turn of events,"
 MAX_NEW_TOKENS=256
 TEMPERATURE=0.8
@@ -47,20 +45,15 @@ OUT_FILE="log/generate_owt_${SLURM_JOB_ID}.txt"
 echo "=== Path checks ==="
 echo "PROJECT_ROOT:      $PROJECT_ROOT"
 echo "CHECKPOINT_PATH:   $CHECKPOINT_PATH"
-echo "TOKENIZER_VOCAB:   $TOKENIZER_VOCAB"
-echo "TOKENIZER_MERGES:  $TOKENIZER_MERGES"
 echo "OUT_FILE:          $OUT_FILE"
 echo
 
 [[ -f "$CHECKPOINT_PATH" ]] || { echo "Missing $CHECKPOINT_PATH"; exit 1; }
-[[ -f "$TOKENIZER_VOCAB" ]] || { echo "Missing $TOKENIZER_VOCAB"; exit 1; }
-[[ -f "$TOKENIZER_MERGES" ]] || { echo "Missing $TOKENIZER_MERGES"; exit 1; }
 
 echo "=== Generate start ==="
 uv run cs336_basics/generate_lm.py \
   --checkpoint_path "$CHECKPOINT_PATH" \
-  --tokenizer_vocab_path "$TOKENIZER_VOCAB" \
-  --tokenizer_merges_path "$TOKENIZER_MERGES" \
+  --tokenizer_backend tiktoken_gpt2 \
   --prompt "$PROMPT" \
   --max_new_tokens "$MAX_NEW_TOKENS" \
   --temperature "$TEMPERATURE" \
@@ -79,4 +72,3 @@ echo
 
 echo "=== Done ==="
 date
-

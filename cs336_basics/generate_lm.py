@@ -31,6 +31,7 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--tokenizer_pkl", type=Path, default=None)
     p.add_argument("--tokenizer_vocab_path", type=Path, default=None)
     p.add_argument("--tokenizer_merges_path", type=Path, default=None)
+    p.add_argument("--tokenizer_backend", choices=["custom_bpe", "tiktoken_gpt2"], default="custom_bpe")
 
     p.add_argument("--prompt", type=str, default="Once upon a time")
     p.add_argument("--max_new_tokens", type=int, default=256)
@@ -57,22 +58,30 @@ def main() -> None:
     torch.manual_seed(args.seed)
     device = _resolve_device(args.device)
 
-    if args.tokenizer_pkl is not None:
-        tokenizer = Tokenizer.from_files(
-            vocab_filepath=str(args.tokenizer_pkl),
-            merges_filepath=str(args.tokenizer_pkl),
-            special_tokens=[args.eos_token],
-        )
+    use_tiktoken = args.tokenizer_backend == "tiktoken_gpt2"
+    if use_tiktoken:
+        import tiktoken
+
+        enc = tiktoken.get_encoding("gpt2")
+        eos_id = enc.eot_token
     else:
-        if args.tokenizer_vocab_path is None or args.tokenizer_merges_path is None:
-            raise ValueError(
-                "Provide either --tokenizer_pkl OR both --tokenizer_vocab_path and --tokenizer_merges_path."
+        if args.tokenizer_pkl is not None:
+            tokenizer = Tokenizer.from_files(
+                vocab_filepath=str(args.tokenizer_pkl),
+                merges_filepath=str(args.tokenizer_pkl),
+                special_tokens=[args.eos_token],
             )
-        tokenizer = Tokenizer.from_files(
-            vocab_filepath=str(args.tokenizer_vocab_path),
-            merges_filepath=str(args.tokenizer_merges_path),
-            special_tokens=[args.eos_token],
-        )
+        else:
+            if args.tokenizer_vocab_path is None or args.tokenizer_merges_path is None:
+                raise ValueError(
+                    "Provide either --tokenizer_pkl OR both --tokenizer_vocab_path and --tokenizer_merges_path."
+                )
+            tokenizer = Tokenizer.from_files(
+                vocab_filepath=str(args.tokenizer_vocab_path),
+                merges_filepath=str(args.tokenizer_merges_path),
+                special_tokens=[args.eos_token],
+            )
+        eos_id = tokenizer.special_to_id.get(args.eos_token)
 
     model = TransformerLM(
         vocab_size=args.vocab_size,
@@ -91,14 +100,16 @@ def main() -> None:
     model.load_state_dict(state_dict, strict=True)
     model.eval()
 
-    prompt_ids = tokenizer.encode(args.prompt)
+    if use_tiktoken:
+        prompt_ids = enc.encode(args.prompt, allowed_special={args.eos_token})
+    else:
+        prompt_ids = tokenizer.encode(args.prompt)
     if not prompt_ids:
-        eos_id = tokenizer.special_to_id.get(args.eos_token)
+        # For GPT-2 / tiktoken we use the built-in EOT token id.
         if eos_id is None:
             raise ValueError("Prompt is empty and eos_token is missing in tokenizer.")
         prompt_ids = [eos_id]
 
-    eos_id = tokenizer.special_to_id.get(args.eos_token)
     out_ids = generate_ids(
         model=model,
         prompt_ids=prompt_ids,
@@ -108,7 +119,7 @@ def main() -> None:
         eos_token_id=eos_id,
         device=device,
     )
-    generated_text = tokenizer.decode(out_ids)
+    generated_text = enc.decode(out_ids) if use_tiktoken else tokenizer.decode(out_ids)
     new_tokens = len(out_ids) - len(prompt_ids)
 
     header = (
