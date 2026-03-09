@@ -1,0 +1,6 @@
+# prompt_tokens=4 new_tokens=230 total_tokens=234 temperature=0.8 top_p=0.95
+Once upon a time, there was a little boy named Tim. Tim loved to play with his toy cars. One day, Tim's mom said, "Tim, we need to mail a letter to grandma. Can you help me?"
+Tim was very excited to help. He took his toy cars and went to the post office. On the way, he saw a big puddle. Tim thought it would be fun to jump in it. But, he did not see the water on the ground.
+Tim ran into the puddle and his toy cars went up and down. He laughed and said, "I am going to mail a letter too!" Then, he saw a small box with a picture of a cake on it. Tim thought it was his grandma's cake. He put the letter in the box and went back to the post office to mail it.
+When Tim got to the post office, he saw that the box was open. He ran to the box and opened it. Inside, he found a big, wet toy car. Tim was very happy. He played with the toy car all day and forgot about the puddle and the letter.
+<|endoftext|>

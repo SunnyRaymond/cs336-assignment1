@@ -39,3 +39,4 @@ Python 3.13.11
 [OpenWebText] Input: data/owt_train.txt
 [OpenWebText] Input size: 11.10 GB
 [OpenWebText] vocab_size=32000 special_tokens=['<|endoftext|>'] target_merges=31743 workers=4 device=auto
+slurmstepd-node221: error: *** JOB 92489 ON node221 CANCELLED AT 2026-03-09T02:45:44 DUE TO TIME LIMIT ***

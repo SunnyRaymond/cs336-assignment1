@@ -1,0 +1,63 @@
+=== Job info ===
+Job ID: 92515
+Host: node203
+PWD:  /var/scratch/dpp2567/cs336-assignment1
+Date: Mon Mar  9 03:07:35 CET 2026
+
+=== GPU info ===
+Mon Mar  9 03:07:36 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 560.35.03              Driver Version: 560.35.03      CUDA Version: 12.6     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:02:00.0 Off |                  N/A |
+| 19%   26C    P0             59W /  250W |       0MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:03:00.0 Off |                  N/A |
+| 12%   30C    P0             56W /  250W |       0MiB /  11264MiB |      1%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:82:00.0 Off |                  N/A |
+| 16%   27C    P0             60W /  250W |       0MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   3  NVIDIA GeForce GTX 1080 Ti     Off |   00000000:83:00.0 Off |                  N/A |
+| 17%   26C    P0             58W /  250W |       0MiB /  11264MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+
+=== Python / uv info ===
+/var/scratch/dpp2567/miniconda3/bin/python
+/var/scratch/dpp2567/miniconda3/bin/uv
+Python 3.13.11
+
+=== Path checks ===
+PROJECT_ROOT:    /var/scratch/dpp2567/cs336-assignment1
+CHECKPOINT_PATH: checkpoints/tinystories_lm_b128.pt
+TOKENIZER_PKL:   tinystories_bpe.pkl
+OUT_FILE:        log/generate_tinystories_92515.txt
+
+=== Generate start ===
+Wrote generation to: log/generate_tinystories_92515.txt
+=== Generated sample ===
+# prompt_tokens=4 new_tokens=230 total_tokens=234 temperature=0.8 top_p=0.95
+Once upon a time, there was a little boy named Tim. Tim loved to play with his toy cars. One day, Tim's mom said, "Tim, we need to mail a letter to grandma. Can you help me?"
+Tim was very excited to help. He took his toy cars and went to the post office. On the way, he saw a big puddle. Tim thought it would be fun to jump in it. But, he did not see the water on the ground.
+Tim ran into the puddle and his toy cars went up and down. He laughed and said, "I am going to mail a letter too!" Then, he saw a small box with a picture of a cake on it. Tim thought it was his grandma's cake. He put the letter in the box and went back to the post office to mail it.
+When Tim got to the post office, he saw that the box was open. He ran to the box and opened it. Inside, he found a big, wet toy car. Tim was very happy. He played with the toy car all day and forgot about the puddle and the letter.
+<|endoftext|>
+
+=== Done ===
+Mon Mar  9 03:07:48 CET 2026
