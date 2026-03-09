@@ -75,10 +75,10 @@ uv run torchrun --standalone --nproc_per_node=4 cs336_basics/train_lm.py \
   --num_layers 10 \
   --num_heads 10 \
   --d_ff 1920 \
-  --batch_size 32 \
+  --batch_size 16 \
   --max_steps 20000 \
   --eval_every 200 \
-  --eval_iters 50 \
+  --eval_iters 20 \
   --log_every 20 \
   --max_lr 5e-4 \
   --min_lr 5e-5 \

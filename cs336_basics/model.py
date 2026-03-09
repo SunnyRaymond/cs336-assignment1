@@ -1,6 +1,7 @@
 import math
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 
 
@@ -23,12 +24,9 @@ def scaled_dot_product_attention(
 
 
 def cross_entropy(inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-    max_logits = torch.max(inputs, dim=-1, keepdim=True).values
-    shifted = inputs - max_logits
-    logsumexp = torch.log(torch.sum(torch.exp(shifted), dim=-1))
-    target_logits = torch.gather(inputs, dim=-1, index=targets.unsqueeze(-1)).squeeze(-1)
-    losses = -target_logits + max_logits.squeeze(-1) + logsumexp
-    return torch.mean(losses)
+    # Use PyTorch's fused implementation to avoid materializing exp(logits),
+    # which can OOM for large vocab sizes (e.g., GPT-2 vocab on OWT).
+    return F.cross_entropy(inputs, targets, reduction="mean")
 
 
 class Linear(nn.Module):
