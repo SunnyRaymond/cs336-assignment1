@@ -1,10 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=gen_lm_owt
-#SBATCH --partition=fatq
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=24G
-#SBATCH --time=00:30:00
+#SBATCH --time=7-00:00:00
 #SBATCH --output=log/%x_%j.log
 #SBATCH --error=log/%x_%j.log
 
