@@ -28,7 +28,9 @@ def _strip_ddp_prefix(state_dict: dict[str, torch.Tensor]) -> dict[str, torch.Te
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Generate text from a saved TransformerLM checkpoint.")
     p.add_argument("--checkpoint_path", type=Path, required=True)
-    p.add_argument("--tokenizer_pkl", type=Path, required=True)
+    p.add_argument("--tokenizer_pkl", type=Path, default=None)
+    p.add_argument("--tokenizer_vocab_path", type=Path, default=None)
+    p.add_argument("--tokenizer_merges_path", type=Path, default=None)
 
     p.add_argument("--prompt", type=str, default="Once upon a time")
     p.add_argument("--max_new_tokens", type=int, default=256)
@@ -55,11 +57,22 @@ def main() -> None:
     torch.manual_seed(args.seed)
     device = _resolve_device(args.device)
 
-    tokenizer = Tokenizer.from_files(
-        vocab_filepath=str(args.tokenizer_pkl),
-        merges_filepath=str(args.tokenizer_pkl),
-        special_tokens=[args.eos_token],
-    )
+    if args.tokenizer_pkl is not None:
+        tokenizer = Tokenizer.from_files(
+            vocab_filepath=str(args.tokenizer_pkl),
+            merges_filepath=str(args.tokenizer_pkl),
+            special_tokens=[args.eos_token],
+        )
+    else:
+        if args.tokenizer_vocab_path is None or args.tokenizer_merges_path is None:
+            raise ValueError(
+                "Provide either --tokenizer_pkl OR both --tokenizer_vocab_path and --tokenizer_merges_path."
+            )
+        tokenizer = Tokenizer.from_files(
+            vocab_filepath=str(args.tokenizer_vocab_path),
+            merges_filepath=str(args.tokenizer_merges_path),
+            special_tokens=[args.eos_token],
+        )
 
     model = TransformerLM(
         vocab_size=args.vocab_size,
