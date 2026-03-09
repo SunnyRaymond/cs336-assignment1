@@ -37,7 +37,7 @@ python --version || true
 echo
 
 CHECKPOINT_PATH="checkpoints/tinystories_lm_b128.pt"
-TOKENIZER_PKL="tinystories_bpe.pkl"
+TOKENIZER_PKL="data/tinystories_bpe.pkl"
 PROMPT="Once upon a time"
 MAX_NEW_TOKENS=256
 TEMPERATURE=0.8

@@ -45,7 +45,7 @@ TRAIN_BIN="data/tinystories_train_tokens.bin"
 VAL_BIN="data/tinystories_val_tokens.bin"
 TRAIN_TXT="data/TinyStoriesV2-GPT4-train.txt"
 VAL_TXT="data/TinyStoriesV2-GPT4-valid.txt"
-TOKENIZER_PKL="tinystories_bpe.pkl"
+TOKENIZER_PKL="data/tinystories_bpe.pkl"
 
 echo "=== Path checks ==="
 echo "PROJECT_ROOT: $PROJECT_ROOT"
