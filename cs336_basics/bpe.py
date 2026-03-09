@@ -84,7 +84,9 @@ class Tokenizer:
 
         vocab = {}
         for k, v in raw_vocab.items():
-            if isinstance(k, str) and k.isdigit():
+            # Use ASCII-decimal check only. `str.isdigit()` is too broad and
+            # treats Unicode chars like "²" as digits, which breaks GPT-2 vocab JSON.
+            if isinstance(k, str) and k.isascii() and k.isdecimal():
                 vocab[int(k)] = v.encode("utf-8") if isinstance(v, str) else bytes(v)
             else:
                 vocab[int(v)] = k.encode("utf-8")
