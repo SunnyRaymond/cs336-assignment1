@@ -81,6 +81,22 @@ def save_checkpoint(path: Path, model: torch.nn.Module, optimizer: torch.optim.O
     )
 
 
+def _load_model_state_flexible(model: torch.nn.Module, state_dict: dict[str, torch.Tensor]) -> None:
+    try:
+        model.load_state_dict(state_dict, strict=True)
+        return
+    except RuntimeError:
+        pass
+
+    has_module_prefix = all(k.startswith("module.") for k in state_dict.keys())
+    if has_module_prefix:
+        stripped = {k.replace("module.", "", 1): v for k, v in state_dict.items()}
+        model.load_state_dict(stripped, strict=False)
+    else:
+        prefixed = {f"module.{k}": v for k, v in state_dict.items()}
+        model.load_state_dict(prefixed, strict=False)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Train TransformerLM with memmap datasets")
     p.add_argument("--train_data", type=Path, required=True, help="Path to train binary token file")
@@ -114,8 +130,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--eps", type=float, default=1e-8)
 
     p.add_argument("--checkpoint_path", type=Path, default=Path("checkpoints/latest.pt"))
+    p.add_argument("--best_checkpoint_path", type=Path, default=None)
     p.add_argument("--save_every", type=int, default=100)
     p.add_argument("--resume", action="store_true")
+    p.add_argument("--init_checkpoint", type=Path, default=None)
+    p.add_argument("--load_optimizer_from_init", action="store_true")
+    p.add_argument("--target_val_loss", type=float, default=None)
 
     p.add_argument("--use_wandb", action="store_true")
     p.add_argument("--wandb_project", type=str, default="cs336-assignment1")
@@ -166,9 +186,14 @@ def main() -> None:
     start_step = 0
     if args.resume and args.checkpoint_path.exists():
         ckpt = torch.load(args.checkpoint_path, map_location="cpu")
-        model_for_train.load_state_dict(ckpt["model_state_dict"])
+        _load_model_state_flexible(model_for_train, ckpt["model_state_dict"])
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
         start_step = int(ckpt["step"]) + 1
+    elif args.init_checkpoint is not None and args.init_checkpoint.exists():
+        ckpt = torch.load(args.init_checkpoint, map_location="cpu")
+        _load_model_state_flexible(model_for_train, ckpt["model_state_dict"])
+        if args.load_optimizer_from_init and "optimizer_state_dict" in ckpt:
+            optimizer.load_state_dict(ckpt["optimizer_state_dict"])
 
     wandb_run = None
     if args.use_wandb and rank == 0:
@@ -185,6 +210,7 @@ def main() -> None:
     else:
         autocast_ctx = nullcontext
 
+    best_val = float("inf")
     for step in range(start_step, args.max_steps):
         lr = get_lr(step, args.max_lr, args.min_lr, args.warmup_iters, args.cosine_cycle_iters)
         for pg in optimizer.param_groups:
@@ -208,6 +234,7 @@ def main() -> None:
                 wandb_run.log({"step": step, "lr": lr, "train_loss": float(loss.item())}, step=step)
 
         if step % args.eval_every == 0:
+            stop_tensor = torch.zeros(1, device=args.device, dtype=torch.int32)
             if use_ddp:
                 dist.barrier()
             if rank == 0:
@@ -224,8 +251,25 @@ def main() -> None:
                 print(f"[eval] step={step} train={train_eval:.6f} val={val_eval:.6f}")
                 if wandb_run is not None:
                     wandb_run.log({"step": step, "eval_train_loss": train_eval, "eval_val_loss": val_eval}, step=step)
+
+                if val_eval < best_val:
+                    best_val = val_eval
+                    best_path = args.best_checkpoint_path or args.checkpoint_path
+                    save_checkpoint(best_path, model_for_train, optimizer, step)
+
+                if args.target_val_loss is not None and val_eval <= args.target_val_loss:
+                    print(f"[stop] target_val_loss reached: {val_eval:.6f} <= {args.target_val_loss:.6f}")
+                    stop_tensor[0] = 1
+
             if use_ddp:
+                dist.broadcast(stop_tensor, src=0)
                 dist.barrier()
+            if (not use_ddp and rank == 0 and args.target_val_loss is not None and val_eval <= args.target_val_loss) or (
+                use_ddp and stop_tensor.item() == 1
+            ):
+                if rank == 0:
+                    save_checkpoint(args.checkpoint_path, model_for_train, optimizer, step)
+                break
 
         if step % args.save_every == 0 and rank == 0:
             save_checkpoint(args.checkpoint_path, model_for_train, optimizer, step)

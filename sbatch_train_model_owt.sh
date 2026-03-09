@@ -87,6 +87,9 @@ uv run torchrun --standalone --nproc_per_node=4 cs336_basics/train_lm.py \
   --weight_decay 0.1 \
   --amp_dtype fp16 \
   --checkpoint_path checkpoints/owt_lm_gpt2tok.pt \
+  --best_checkpoint_path checkpoints/owt_lm_gpt2tok_best.pt \
+  --resume \
+  --target_val_loss 1.2 \
   --save_every 500
 
 echo "=== Done ==="
