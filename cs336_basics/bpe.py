@@ -5,6 +5,7 @@ import pickle
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Iterator
 import json
+from functools import lru_cache
 from multiprocessing.pool import ThreadPool
 
 import regex
@@ -14,6 +15,35 @@ GPT2_PRETOKEN_PATTERN = (
     r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
 )
 PRETOKEN_RE = regex.compile(GPT2_PRETOKEN_PATTERN)
+
+
+@lru_cache
+def _gpt2_bytes_to_unicode() -> dict[int, str]:
+    bs = list(range(ord("!"), ord("~") + 1)) + list(range(ord("¡"), ord("¬") + 1)) + list(range(ord("®"), ord("ÿ") + 1))
+    cs = bs[:]
+    n = 0
+    for b in range(2**8):
+        if b not in bs:
+            bs.append(b)
+            cs.append(2**8 + n)
+            n += 1
+    return dict(zip(bs, [chr(c) for c in cs]))
+
+
+@lru_cache
+def _gpt2_unicode_to_byte() -> dict[str, int]:
+    return {u: b for b, u in _gpt2_bytes_to_unicode().items()}
+
+
+def _decode_gpt2_token(token: str) -> bytes:
+    decoder = _gpt2_unicode_to_byte()
+    out = bytearray()
+    for ch in token:
+        if ch in decoder:
+            out.append(decoder[ch])
+        else:
+            out.extend(ch.encode("utf-8"))
+    return bytes(out)
 
 
 class Tokenizer:
@@ -89,14 +119,16 @@ class Tokenizer:
             if isinstance(k, str) and k.isascii() and k.isdecimal():
                 vocab[int(k)] = v.encode("utf-8") if isinstance(v, str) else bytes(v)
             else:
-                vocab[int(v)] = k.encode("utf-8")
+                vocab[int(v)] = _decode_gpt2_token(k)
 
         merges = []
         for line in raw_merges:
+            if line.startswith("#"):
+                continue
             parts = line.split(" ")
             if len(parts) != 2:
                 continue
-            merges.append((parts[0].encode("utf-8"), parts[1].encode("utf-8")))
+            merges.append((_decode_gpt2_token(parts[0]), _decode_gpt2_token(parts[1])))
 
         return cls(vocab=vocab, merges=merges, special_tokens=special_tokens)
 
