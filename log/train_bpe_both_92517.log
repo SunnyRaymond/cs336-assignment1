@@ -39,3 +39,7 @@ Python 3.13.11
 [OpenWebText] Input: data/owt_train.txt
 [OpenWebText] Input size: 11.10 GB
 [OpenWebText] vocab_size=32000 special_tokens=['<|endoftext|>'] target_merges=31743 workers=4 device=auto
+[OpenWebText] Training done in 76408.64s
+[OpenWebText] Saved owt_bpe.pkl | artifact_size=730.02 KB | learned_vocab=32000 | learned_merges=31743
+=== Done ===
+Tue Mar 10 00:52:26 CET 2026
